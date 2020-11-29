@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     private SimpleAdapter listSimpleAdapter;
     List<Map<String, String>> values;
     List<Map<String,String>> result;
+    ArrayList<Integer> deleteListIndex;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,11 +45,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //Toolbar toolbar = findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
+        deleteListIndex = new ArrayList<>();
         result = new ArrayList<>();
         list = findViewById(R.id.list);
         swipeRefresh = findViewById(R.id.swipe_refresh);
         saveText(getString((R.string.large_text)));
-        listContentAdapter = createAdapter();
+        listContentAdapter = createAdapter(savedInstanceState);
         list.setAdapter(listContentAdapter);
 
         list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -57,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 String deleteLine = getResources().getString(R.string.large_text);
                 deleteTextString(deleteLine);
                 values.remove(i);
+                deleteListIndex.add(i);
                 listSimpleAdapter.notifyDataSetChanged();
             }
         });
@@ -69,15 +72,32 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onPostCreate(@Nullable Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putIntegerArrayList(KEY1,deleteListIndex);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        deleteListIndex = (ArrayList<Integer>) savedInstanceState.getIntegerArrayList(KEY1);
+    }
+
     @NonNull
-    private ListAdapter createAdapter() {
-        values= prepareContent(KEY1,KEY2);
+    private ListAdapter createAdapter(Bundle inputDelArrayListInteger) {
+        values= prepareContent(KEY1,KEY2,inputDelArrayListInteger);
         listSimpleAdapter = new SimpleAdapter(this, values, android.R.layout.simple_list_item_2, new String[]{KEY1,KEY2}, new int[]{android.R.id.text1,android.R.id.text2});
         return listSimpleAdapter;
     }
 
     @NonNull
-    private List<Map<String, String>> prepareContent(String key1, String key2) {
+    private List<Map<String, String>> prepareContent(String key1, String key2, Bundle inputDelArrayListInteger) {
         String[] text=loadText().split("\n\n");
         List <String> textString = new ArrayList<String>();
         for (int j=0; j<text.length;j++) {
@@ -88,6 +108,11 @@ public class MainActivity extends AppCompatActivity {
             map.put(KEY1, textString.get(i));
             map.put(KEY2, textString.get(i).length()+"");
             result.add(map);
+        }
+        if (!deleteListIndex.isEmpty()) {
+            for (int i=0;i<=deleteListIndex.size(); i++) {
+                result.remove(deleteListIndex.get(i));
+            }
         }
         return result;
     }
