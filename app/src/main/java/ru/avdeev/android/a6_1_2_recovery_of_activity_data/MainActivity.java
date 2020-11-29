@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     private ListAdapter listContentAdapter;
     private SimpleAdapter listSimpleAdapter;
     List<Map<String, String>> values;
-    List<Map<String,String>> result;
+    List<Map<String, String>> result;
     ArrayList<Integer> deleteListIndex;
 
     @Override
@@ -45,11 +45,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //Toolbar toolbar = findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
-        deleteListIndex = new ArrayList<>();
+        if (savedInstanceState != null && savedInstanceState.containsKey(KEY1)) {
+            deleteListIndex = savedInstanceState.getIntegerArrayList(KEY1);
+        } else {
+            deleteListIndex = new ArrayList<>();
+        }
         result = new ArrayList<>();
         list = findViewById(R.id.list);
         swipeRefresh = findViewById(R.id.swipe_refresh);
-        saveText(getString((R.string.large_text)));
+        saveText(getString(R.string.large_text));
         listContentAdapter = createAdapter(savedInstanceState);
         list.setAdapter(listContentAdapter);
 
@@ -59,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
                 String deleteLine = getResources().getString(R.string.large_text);
                 deleteTextString(deleteLine);
                 values.remove(i);
+                deleteListIndex = new ArrayList<>();
                 deleteListIndex.add(i);
                 listSimpleAdapter.notifyDataSetChanged();
             }
@@ -70,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
                 recreate();
             }
         });
+
     }
 
     @Override
@@ -86,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        deleteListIndex = (ArrayList<Integer>) savedInstanceState.getIntegerArrayList(KEY1);
+        deleteListIndex = savedInstanceState.getIntegerArrayList(KEY1);
     }
 
     @NonNull
@@ -103,17 +109,18 @@ public class MainActivity extends AppCompatActivity {
         for (int j=0; j<text.length;j++) {
             textString.add(text[j]);
         }
+        if (!deleteListIndex.isEmpty()) {
+            for (int i=0;i<deleteListIndex.size(); i++) {
+               textString.remove(deleteListIndex.get(i));
+            }
+        }
         for (int i=0; i<textString.size(); i++) {
             Map<String, String> map = new HashMap<>();
             map.put(KEY1, textString.get(i));
             map.put(KEY2, textString.get(i).length()+"");
             result.add(map);
         }
-        if (!deleteListIndex.isEmpty()) {
-            for (int i=0;i<=deleteListIndex.size(); i++) {
-                result.remove(deleteListIndex.get(i));
-            }
-        }
+
         return result;
     }
     private void saveText (String text) {
