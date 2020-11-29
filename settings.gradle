@@ -1,0 +1,2 @@
+include ':app'
+rootProject.name = "6_1_2_Recovery_of_activity_data"
